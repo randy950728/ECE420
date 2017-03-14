@@ -39,7 +39,7 @@ def eigen_face(face_data):
     mean_array = np.ndarray(shape=(num_face, size), dtype="float")
 
     # Covariance Matrix array
-    co_var = np.ndarray(shape=(size,size), dtype="float")
+    co_var = np.ndarray(shape=(num_face,num_face), dtype="float")
 
     # Compute average of face data
     # ---------------------------------#
@@ -60,6 +60,7 @@ def eigen_face(face_data):
     # Compute Covariance Matrix
     # ---------------------------------#
     trans = np.transpose(mean_array)
+    print(trans)
     co_var = np.dot(mean_array,trans)
 
     print("covariance",co_var)
@@ -68,7 +69,7 @@ def eigen_face(face_data):
 
     # Compute the eigen vectors of A*A^T
     # ---------------------------------#
-    junk, vector = np.linalg(co_var)
+    junk, vector = np.linalg.eig(co_var)
     vector = np.dot(trans, vector)
     print("eigen vector",vector)
     print(np.shape(vector))
