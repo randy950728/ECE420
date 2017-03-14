@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 def read_face(person):
     faces = []
     for i in range(1, 11):
+
         file = str(i) + '.png'
         curr_face = misc.imread(file)
         faces.append(convt(curr_face).astype("float"))
@@ -45,8 +46,6 @@ def eigen_face(face_data):
     for pic in range(num_face):
         for i in range(size):
             avg_array[i] += float(face_data[pic][i])
-
-
     avg_array = avg_array/num_face
 
     # Subtract the mean face
@@ -54,7 +53,7 @@ def eigen_face(face_data):
     i = 0
     for pic in range(num_face):
         for j in range(size):
-                mean_array[i][j] = np.abs(face_data[pic][j]-avg_array[j])
+                mean_array[i][j] = face_data[pic][j]-avg_array[j]
         i += 1
 
 
@@ -76,12 +75,10 @@ def eigen_face(face_data):
     junk, vector = np.linalg.eig(co_var)
     print("eigen vector",vector)
     print(np.shape(vector))
+
+
     # Keep only K eigen vector
     # ---------------------------------#
-
-
-
-
 
 # Main function#
 # -----------------------------------------------------------#
