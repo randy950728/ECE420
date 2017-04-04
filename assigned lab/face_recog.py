@@ -3,7 +3,6 @@ from scipy import misc
 import random as rd
 from scipy import signal
 import matplotlib.pyplot as plt
-import cv2
 # Average face array
 # avg_array = []
 # largest_vector = []
@@ -34,36 +33,20 @@ def face_recog (input, avg_array, largest_vector, weight):
     # print("vector: ", np.shape(largest_vector), "norm: ", np.shape(norm_array))
     project = np.dot(largest_vector, (np.atleast_2d(norm_array)).transpose() )
     # print("project: ", np.shape(project))
+
+
+    # Calculate distance of each data point, and normalize
+    # -----------------------------------------#
     distance =  weight-project
     abs = np.linalg.norm(distance, axis=0)
     # print("abs:", np.shape(abs))
+
+
+    # Pick the index of minimum value as a guess
+    # -----------------------------------------#
     guess = np.argmin(abs)/(7)
 
-    # print(guess)
-    # print(abs)
     return guess
-    # for i in range(7):
-    #     curr_trans = (np.atleast_2d(largest_vector[i, :]))
-    #     temp = np.dot(curr_trans, (np.atleast_2d(norm_array)).transpose())
-    #     temp = np.dot(temp, np.atleast_2d(largest_vector[i, :]))
-    #     project += temp
-
-
-    # Compute covariance for next step
-    # -----------------------------------------#
-
-
-    # Calculating the difference square of normalize face and projection
-    # -----------------------------------------#
-    # for i in range(size):
-    #     diff_sqr[0, i] = (project[0, i]-norm_array[i])**2
-    #     # diff_sqr[0, i] += ((project[0, i] - norm_array[i]) ** 2)/
-    # distance = np.amin(diff_sqr)
-
-    # print(distance)
-    # return distance
-    # print("norm: ", np.shape(norm_array))
-    # print("project: ", np.shape(project))
 
 
 
@@ -98,14 +81,6 @@ def read_a_face(target, exclude):
             curr_face = misc.imread(file)
             faces.append(convt(curr_face).astype("float"))
     return faces
-
-    # faces = []
-    # file = '7 (2).png'
-    # curr_face = misc.imread(file)
-    # faces.append(convt(curr_face).astype("float"))
-    # return faces
-
-
 
 
 # Read face data
@@ -196,16 +171,11 @@ def eigen_face(face_data):
     # print("co_var shape: ", np.shape(co_var))
     # print("covar shape: ", np.shape(covar))
 
-
     # Compute the eigen vectors of A*A^T
     # ---------------------------------#
     value, vector = np.linalg.eig(co_var)
     sort_index = value.argsort()[::-1]      #Create sorting index
-    value = value[sort_index]               #Sort through eigenvalues
     vector = vector[sort_index]             #Sort through eigenvectors
-
-    # print("label")
-    # print(value)
 
     # Normalize Eigen vectors
     # ---------------------------------#
@@ -216,7 +186,7 @@ def eigen_face(face_data):
 
     # Keep only K eigen vector
     # ---------------------------------#
-    largest_vector = vector
+    largest_vector = vector[:,0:2]
     largest_vector = largest_vector.transpose()
     print("largest vector", np.shape(largest_vector) )
     print("mean_array", np.shape(mean_array))
@@ -235,11 +205,8 @@ def eigen_face(face_data):
             # print(temp)
             restrt += temp
 
-    min = np.min(restrt)
-    max = np.max(restrt)
     for i in range(size):
         restrt[0,i]= (restrt[0,i]-min)/(max-min)*255
-    # print(np.amax(restrt), np.amin((restrt)))
 
     final = np.ndarray(shape=(112,92,3), dtype='uint8')
     for y in range(112):
@@ -278,10 +245,13 @@ for i in range(num_face):
     for j in range(test_size):
         total += 1
         out = face_recog(test_face[i][j],avg,larg,weight)
-        print("Input face ID: ",i, " >>>>>> guessed ID: ",out)
-        if(out == i):
+
+        if out == i:
+            print("Input face ID: ", i, " >>>>>> guessed ID: ", out, "Correct!")
             correct +=1
+
         else:
+            print("Input face ID: ", i, " >>>>>> guessed ID: ", out, "Incorrect!")
             incorrect+=1
 
 print("total faces: ", total)
