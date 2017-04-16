@@ -38,8 +38,18 @@ def face_recog (input, avg_array, largest_vector, weight):
     # Calculate distance of each data point, and normalize
     # -----------------------------------------#
     distance =  weight-project
+    print(distance[0][0])
+    print(weight[0][0]-project[0])
     abs = np.linalg.norm(distance, axis=0)
+
+    # test=0.0
+    # for i in range(8):
+    #     test+=distance[i][0]**2
+    # print("weight: ", np.shape(weight)," project: ", np.shape(project))
+    # print("distance: ", np.shape(distance))\
     # print("abs:", np.shape(abs))
+    # print(abs)
+    # print(test**0.5)
 
 
     # Pick the index of minimum value as a guess
@@ -186,7 +196,7 @@ def eigen_face(face_data):
 
     # Keep only K eigen vector
     # ---------------------------------#
-    largest_vector = vector[:,0:2]
+    largest_vector = vector[:,0:8]
     largest_vector = largest_vector.transpose()
     print("largest vector", np.shape(largest_vector) )
     print("mean_array", np.shape(mean_array))
@@ -257,6 +267,32 @@ for i in range(num_face):
 print("total faces: ", total)
 print("Sucess rate: ", correct/float(total)*100.0, "%")
 print("Fail rate: ", incorrect/float(total)*100.0, "%")
+print(np.shape(weight))
+f = open("weight.txt", "w+")
+for i in range(np.shape(weight)[0]):
+    for j in range(np.shape(weight)[1]):
+        f.write(str(weight[i][j]))
+        if j < (np.shape(weight)[1]-1):
+            f.write(",")
+    f.write("\n")
+f.close()
+
+f = open("avg.txt", "w+")
+for i in range(10304):
+    f.write(str(avg[i]))
+    if j < 10303:
+        f.write(",")
+f.close()
+
+f = open("vector.txt", "w+")
+for i in range(np.shape(larg)[0]):
+    for j in range(np.shape(larg)[1]):
+        f.write(str(larg[i][j]))
+        if j < (np.shape(larg)[1]-1):
+            f.write(",")
+    f.write("\n")
+f.close()
+
 # Combine all face into 1 2D array
 # for i in range(4):
 #     (large, average) = eigen_face(train_face[i])
