@@ -210,32 +210,31 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         double success_rate=0;
         int face = 0;
         int person = 0;
-        output_image.setImageBitmap(image);
-        //Open up a randomly generated face for testing
-//        face = rand.nextInt(10);
-//        person = rand.nextInt(10);
+//        Open up a randomly generated face for testing
+        face = rand.nextInt(10);
+        person = rand.nextInt(10);
 //        loadDataFromAsset(face,person);
-//
-//        //Try to match the closest face
-//        guess = face_recog();
-//        draw_closest(guess);
-//        total+=1;
-//        temp = guess/7;
-//        if(temp == person)
-//        {
-//            sucess += 1;
-//            result_text.setText("Correct!");
-//            result_text.setTextColor(Color.GREEN);
-//        }
-//
-//        else
-//        {
-//            result_text.setText("Incorrect!");
-//            result_text.setTextColor(Color.RED);
-//        }
-//
-//        success_rate = (double)((int) (sucess/total*10000))/100;
-//        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% "+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
+
+        //Try to match the closest face
+        guess = face_recog();
+        draw_closest(guess);
+        total+=1;
+        temp = guess/7;
+        if(temp == person)
+        {
+            sucess += 1;
+            result_text.setText("Correct!");
+            result_text.setTextColor(Color.GREEN);
+        }
+
+        else
+        {
+            result_text.setText("Incorrect!");
+            result_text.setTextColor(Color.RED);
+        }
+
+        success_rate = (double)((int) (sucess/total*10000))/100;
+        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% "+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
     }
 
     private void start()
