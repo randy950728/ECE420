@@ -1,14 +1,15 @@
 package ece420.lab6;
 
+
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -28,15 +29,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import static ece420.lab6.MainActivity.appflag;
 import static ece420.lab6.R.id.output;
 //import java.util.List;
 //import android.util.Log;
 
 
 
-public class HistEq extends AppCompatActivity
+public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
 {
     //Constants for each vector/avg/weight
     int avg_row = 1;
@@ -54,11 +56,10 @@ public class HistEq extends AppCompatActivity
 
 
     //Other variables
-    int num_face = 10;
-    int train_size = 7;
-    int test_size = 3;
-    double out;
-    float new_train_face[][] = new float[num_face*train_size][10304];
+//    int num_face = 10;
+//    int train_size = 7;
+//    double out;
+//    float new_train_face[][] = new float[num_face*train_size][10304];
 
 
     //Variable for UI related stuff
@@ -74,15 +75,19 @@ public class HistEq extends AppCompatActivity
     private TextView counter_text;
 
     //Other stuff
+    boolean previewing = false;
     private double total=0.0;
     private double sucess=0.0;
     private int width = 92;
     private int height = 112;
+    private int cam_width = 640;
+    private int cam_height = 480;
     private Random rand= new Random();
     Bitmap image;
     String TAG = "debug";
     private Button buttonRS;
     private Button buttonTST;
+    private Lock image_lock = new ReentrantLock();;
     //-------------------------------------------------------------------------------------------//
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -97,7 +102,6 @@ public class HistEq extends AppCompatActivity
         textHelper = (TextView) findViewById(R.id.Helper);
         result_text= (TextView) findViewById(R.id.result_display);
         counter_text=(TextView) findViewById(R.id.counter);
-        input_image = (ImageView) findViewById(R.id.input);
         output_image = (ImageView) findViewById(output);
         buttonRS = (Button) findViewById(R.id.reset);
         buttonTST = (Button) findViewById(R.id.test);
@@ -107,6 +111,12 @@ public class HistEq extends AppCompatActivity
         //Initialize everything needed
         //--------------------------------------------//
         start();
+
+        //Setup Camera views//
+        surfaceView = (SurfaceView)findViewById(R.id.camera_input);
+        surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.addCallback(this);
+        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         //Set up function call when Test button is clicked
         buttonTST.setOnClickListener(new View.OnClickListener()
@@ -133,6 +143,52 @@ public class HistEq extends AppCompatActivity
             }
         });
     }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width,
+                               int height) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        // TODO Auto-generated method stub
+        if(!previewing) {
+            camera = Camera.open();
+            if (camera != null) {
+                try {
+                    Camera.Parameters parameters = camera.getParameters();
+                    parameters.setPreviewSize(cam_width,cam_height);
+                    camera.setParameters(parameters);
+                    camera.setDisplayOrientation(90);
+                    camera.setPreviewDisplay(surfaceHolder);
+                    camera.setPreviewCallback(new PreviewCallback() {
+                        public void onPreviewFrame(byte[] data, Camera camera)
+                        {
+                            //Simply write input camera into bitmap
+                            write_buffer(data);
+                        }
+                    });
+                    camera.startPreview();
+                    previewing = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder)
+    {
+        if (camera != null && previewing) {
+            camera.stopPreview();
+            camera.setPreviewCallback(null);
+            camera.release();
+            camera = null;
+            previewing = false;
+        }
+    }
     //----------------------------------------------------------------------------//
     private double[][] convt_to_array(int num_row, int num_col, List input_list)
     {
@@ -154,31 +210,32 @@ public class HistEq extends AppCompatActivity
         double success_rate=0;
         int face = 0;
         int person = 0;
+        output_image.setImageBitmap(image);
         //Open up a randomly generated face for testing
-        face = rand.nextInt(10);
-        person = rand.nextInt(10);
-        loadDataFromAsset(face,person);
-
-        //Try to match the closest face
-        guess = face_recog();
-        draw_closest(guess);
-        total+=1;
-        temp = guess/7;
-        if(temp == person)
-        {
-            sucess += 1;
-            result_text.setText("Correct!");
-            result_text.setTextColor(Color.GREEN);
-        }
-
-        else
-        {
-            result_text.setText("Incorrect!");
-            result_text.setTextColor(Color.RED);
-        }
-
-        success_rate = (double)((int) (sucess/total*10000))/100;
-        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% "+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
+//        face = rand.nextInt(10);
+//        person = rand.nextInt(10);
+//        loadDataFromAsset(face,person);
+//
+//        //Try to match the closest face
+//        guess = face_recog();
+//        draw_closest(guess);
+//        total+=1;
+//        temp = guess/7;
+//        if(temp == person)
+//        {
+//            sucess += 1;
+//            result_text.setText("Correct!");
+//            result_text.setTextColor(Color.GREEN);
+//        }
+//
+//        else
+//        {
+//            result_text.setText("Incorrect!");
+//            result_text.setTextColor(Color.RED);
+//        }
+//
+//        success_rate = (double)((int) (sucess/total*10000))/100;
+//        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% "+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
     }
 
     private void start()
@@ -212,41 +269,39 @@ public class HistEq extends AppCompatActivity
         catch(IOException ex)
         {return;}
     }
+
     // Callback will be directed to this function
     //-------------------------------------------------------------------------------------------//
-    protected void drawSomething(Canvas canvas, byte[] data)
+    protected void write_buffer( byte[] data)
     {
         Matrix matrix = new Matrix();
         matrix.postRotate(90);
 
-        if(appflag==1)
+        //Convert the input to RGB
+        int[] rgbdata = yuv2rgb(data);
+
+        //Aquire lock before modifying image
+        image_lock.lock();
+        try
         {
-            // Your function is called here
-//            byte[] histeqdata = histeq(data,width,height);
-            // We convert YUV to RGB For you
-//            int[] rgbdata = yuv2rgb(histeqdata);
-
             // Create bitmap and manipulate orientation
-//            Bitmap bmp = Bitmap.createBitmap(rgbdata,width,height, ARGB_8888);
-//            bmp = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+            image = Bitmap.createBitmap(rgbdata, cam_width, cam_height, Bitmap.Config.ARGB_8888);
+            image = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), matrix, true);
+        } finally {image_lock.unlock();}
 
-            // Draw the bitmap
-//            canvas.drawBitmap(bmp,new Rect(0,0,height,width),new Rect(0,0,canvas.getWidth(),canvas.getHeight()),null);
-            return;
-        }
+        return;
     }
 
     // Convert YUV to RGB
     //-------------------------------------------------------------------------------------------//
     public int[] yuv2rgb(byte[] data)
     {
-        final int frameSize = width * height;
+        final int frameSize = cam_width * cam_height;
         int[] rgb = new int[frameSize];
 
-        for (int j = 0, yp = 0; j < height; j++)
-        {
-            int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
-            for (int i = 0; i < width; i++, yp++) {
+        for (int j = 0, yp = 0; j < cam_height; j++) {
+            int uvp = frameSize + (j >> 1) * cam_width, u = 0, v = 0;
+            for (int i = 0; i < cam_width; i++, yp++) {
                 int y = (0xff & ((int) data[yp])) - 16;
                 if (y < 0)
                     y = 0;
@@ -271,21 +326,6 @@ public class HistEq extends AppCompatActivity
             }
         }
         return rgb;
-    }
-
-
-    // Converting to Grayscale and Merge
-    //-------------------------------------------------------------------------------------------//
-    public int[] merge(int[] xdata,int[] ydata)
-    {
-        int size = height*width;
-        int[] edgedata = new int[size];
-        for(int i=0;i<size;i++)
-        {
-            int p = (int)Math.sqrt((double)((xdata[i]&0xff)*(xdata[i]&0xff) + (ydata[i]&0xff)*(ydata[i]&0xff))/2);
-            edgedata[i] = 0xff000000 | p<<16 | p<<8 | p;
-        }
-        return edgedata;
     }
 
     //-------------------------------------------------------------------------------------------//
@@ -353,19 +393,24 @@ public class HistEq extends AppCompatActivity
         SimpleMatrix normal_matrix;
         SimpleMatrix project_matrix;
 
-        //Convert Input bitmap into array
-        for(int i = 0; i < image.getHeight(); i++)
+        image_lock.lock();
+        try
         {
-            for(int j=0 ; j<image.getWidth(); j++)
+            //Convert Input bitmap into array
+            for(int i = 0; i < image.getHeight(); i++)
             {
-                raw_pix = image.getPixel(j,i);
-                A = (raw_pix >> 24) &0xff;
-                R = (raw_pix >>16) &0xff;
-                G = (raw_pix >> 8) &0xff;
-                B = (raw_pix     ) &0xff;
-                input[0][i*image.getWidth()+j] = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+                for(int j=0 ; j<image.getWidth(); j++)
+                {
+                    raw_pix = image.getPixel(j,i);
+                    A = (raw_pix >> 24) &0xff;
+                    R = (raw_pix >>16) &0xff;
+                    G = (raw_pix >> 8) &0xff;
+                    B = (raw_pix     ) &0xff;
+                    input[0][i*image.getWidth()+j] = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+                }
             }
-        }
+        } finally {image_lock.unlock();}
+
 
         //Calculate normal face
         for(int i = 0; i < 10304; i++)
@@ -418,23 +463,6 @@ public class HistEq extends AppCompatActivity
         }
         Log.d("debug","min idx"+Integer.toString(min_idx));
         return min_idx;
-    }
-
-
-    //-------------------------------------------------------------------------------------------//
-    private float[] convt(float face[][])
-    {
-        int height = 92;
-        int width = 112;
-        float new_face[] = new float[10304];
-        for(int y = 0; y<height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                new_face[x + y * width] = face[y][x];
-            }
-        }
-        return new_face;
     }
 
     //------------------------------------------------------------------------------------------//

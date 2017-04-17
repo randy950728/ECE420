@@ -29,19 +29,6 @@
         android:layout_alignParentStart="true" />
 
     <ImageView
-        android:id="@+id/input"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/test"
-        android:layout_below="@+id/HETitle"
-        android:adjustViewBounds="true"
-        android:cropToPadding="false"
-        android:maxHeight="300dp"
-        android:maxWidth="300dp"
-        android:scaleType="fitCenter"
-        app:srcCompat="@android:color/darker_gray" />
-
-    <ImageView
         android:id="@+id/output"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -85,5 +72,14 @@
         android:layout_above="@+id/output"
         android:layout_centerHorizontal="true"
         android:text="Invalid" />
+
+    <SurfaceView
+        android:id="@+id/camera_input"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/reset"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/HETitle" />
 
 </RelativeLayout>
