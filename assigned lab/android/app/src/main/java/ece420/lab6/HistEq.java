@@ -214,30 +214,30 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         person = rand.nextInt(10);
 //        loadDataFromAsset(face,person);
 
-        output_image.setImageBitmap(image);
-//        //Try to match the closest face
-//        guess = face_recog();
-//        draw_closest(guess);
-//        total+=1;
-//        temp = guess/7;
-//
-//        //Check for guess result, increment counter accordingly
-//        if(temp == person)
-//        {
-//            sucess += 1;
-//            result_text.setText("Correct!");
-//            result_text.setTextColor(Color.GREEN);
-//        }
-//
-//        else
-//        {
-//            result_text.setText("Incorrect!");
-//            result_text.setTextColor(Color.RED);
-//        }
-//
-//        //Calculate success rate at update it unto the screen
-//        success_rate = (double)((int) (sucess/total*10000))/100;
-//        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% ");//+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
+
+        //Try to match the closest face
+        guess = face_recog();
+        draw_closest(guess);
+        total+=1;
+        temp = guess/7;
+
+        //Check for guess result, increment counter accordingly
+        if(temp == person)
+        {
+            sucess += 1;
+            result_text.setText("Correct!");
+            result_text.setTextColor(Color.GREEN);
+        }
+
+        else
+        {
+            result_text.setText("Incorrect!");
+            result_text.setTextColor(Color.RED);
+        }
+
+        //Calculate success rate at update it unto the screen
+        success_rate = (double)((int) (sucess/total*10000))/100;
+        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% ");//+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
     }
 
     private void start()
@@ -253,9 +253,9 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         try
         {
             //Open input data
-            vector_csv = new CSVReader(new InputStreamReader(getAssets().open("vector_2.txt")));
-            avg_csv    = new CSVReader(new InputStreamReader(getAssets().open("avg_2.txt")));
-            weight_csv = new CSVReader(new InputStreamReader(getAssets().open("weight_2.txt")));
+            vector_csv = new CSVReader(new InputStreamReader(getAssets().open("vector_4.txt")));
+            avg_csv    = new CSVReader(new InputStreamReader(getAssets().open("avg_4.txt")));
+            weight_csv = new CSVReader(new InputStreamReader(getAssets().open("weight_4.txt")));
 
             //Read input data into list
             vector_list = vector_csv.readAll();
@@ -291,7 +291,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
             // Create bitmap and manipulate orientation
             image = Bitmap.createBitmap(rgbdata, cam_width, cam_height, Bitmap.Config.ARGB_8888);
             image = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), matrix, true);
-            image = Bitmap.createBitmap(image, y_min, x_min,height, width);
+            image = Bitmap.createBitmap(image, y_min, x_min,width, height);
         } finally {image_lock.unlock();}
 
         return;
@@ -414,7 +414,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
                     input[0][i*image.getWidth()+j] = 0.2126 * R + 0.7152 * G + 0.0722 * B;
                 }
             }
-
+//            test_image.setImageBitmap(image);
             test_image.setImageBitmap(image);
         } finally {image_lock.unlock();}
 
