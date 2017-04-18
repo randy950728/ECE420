@@ -1,0 +1,294 @@
+import numpy as np
+from scipy import misc
+import random as rd
+from scipy import signal
+import matplotlib.pyplot as plt
+# Average face array
+# avg_array = []
+# largest_vector = []
+
+#Face Recognition Function
+# -----------------------------------------------------------#
+def face_recog (input, avg_array, largest_vector, weight):
+    # global avg_array
+    # global largest_vector
+
+    size = np.shape(input)[0]
+    norm_array = np.ndarray(shape=(size), dtype="float64")
+    project  = np.ndarray(shape=(1,size), dtype="float64")
+    diff_sqr = np.ndarray(shape=(1,size), dtype="float64")
+
+    # print(size)
+    # print("input shape: ", np.shape(input))
+    # print("avg shape: ", np.shape(avg_array))
+    # print("norm shape: ", np.shape(norm_array))
+
+    # Subtract input from average face
+    # -----------------------------------------#
+    norm_array = input-avg_array
+
+
+    # Calculate projection on eigenface vector
+    # -----------------------------------------#
+    # print("vector: ", np.shape(largest_vector), "norm: ", np.shape(norm_array))
+    project = np.dot(largest_vector, (np.atleast_2d(norm_array)).transpose() )
+    # print("project: ", np.shape(project))
+
+
+    # Calculate distance of each data point, and normalize
+    # -----------------------------------------#
+    distance =  weight-project
+    print(distance[0][0])
+    print(weight[0][0]-project[0])
+    abs = np.linalg.norm(distance, axis=0)
+
+    # test=0.0
+    # for i in range(8):
+    #     test+=distance[i][0]**2
+    # print("weight: ", np.shape(weight)," project: ", np.shape(project))
+    # print("distance: ", np.shape(distance))\
+    # print("abs:", np.shape(abs))
+    # print(abs)
+    # print(test**0.5)
+
+
+    # Pick the index of minimum value as a guess
+    # -----------------------------------------#
+    guess = np.argmin(abs)/(7)
+
+    return guess
+
+
+
+# Read 1 face data
+# -----------------------------------------------------------#
+def read_a_face(target, exclude):
+    faces = []
+    for i in range(1, 11):
+        if(i not in exclude):
+            if (target == 0):
+                file = str(i) + '.png'
+            if(target == 1):
+                file = str(i) + ' (1).png'
+            elif(target == 2):
+                file = str(i) + ' (2).png'
+            elif (target == 3):
+                file = str(i) + ' (3).png'
+            elif (target == 4):
+                file = str(i) + ' (4).png'
+            elif (target == 5):
+                file = str(i) + ' (5).png'
+            elif (target == 6):
+                file = str(i) + ' (6).png'
+            elif (target == 7):
+                file = str(i) + ' (7).png'
+            elif (target == 8):
+                file = str(i) + ' (8).png'
+            elif (target == 9):
+                file = str(i) + ' (9).png'
+            else:
+                file = str(i) + '.png'
+            curr_face = misc.imread(file, mode = 'P')
+            faces.append(convt(curr_face).astype("float"))
+    return faces
+
+
+# Read face data
+# -----------------------------------------------------------#
+def read_face(target):
+    faces = []
+    list = range(1,11)
+    random = rd.sample(list,7)
+    print(random)
+    for i in range(1, 11):
+        if(i in random):
+            if (target == 0):
+                file = str(i) + '.png'
+            if(target == 1):
+                file = str(i) + ' (1).png'
+            elif(target == 2):
+                file = str(i) + ' (2).png'
+            elif (target == 3):
+                file = str(i) + ' (3).png'
+            elif (target == 4):
+                file = str(i) + ' (4).png'
+            elif (target == 5):
+                file = str(i) + ' (5).png'
+            elif (target == 6):
+                file = str(i) + ' (6).png'
+            elif (target == 7):
+                file = str(i) + ' (7).png'
+            elif (target == 8):
+                file = str(i) + ' (8).png'
+            elif (target == 9):
+                file = str(i) + ' (9).png'
+            else:
+                file = str(i) + '.png'
+            curr_face = misc.imread(file, mode = 'P')
+            faces.append(convt(curr_face).astype("float"))
+    return faces, random
+
+# convert a single face data to 1D array
+# -----------------------------------------------------------#
+def convt(face):
+    height = np.shape(face)[0]
+    width = np.shape(face)[1]
+    typed = type(face[0,0])
+    new_face = np.ndarray(shape=(height*width), dtype=typed)
+    for y in range(height):
+        for x in range(width):
+            new_face[x+y*width] = face[y,x]
+    return new_face
+
+# Compute eignen faces
+# -----------------------------------------------------------#
+def eigen_face(face_data):
+    num_face = np.shape(face_data)[0]
+    size = np.shape(face_data)[1]
+    # print(size)
+    avg_array = np.ndarray(shape=(size), dtype="float64")
+
+    # local mean face array after subtraction
+    mean_array = np.ndarray(shape=(num_face, size), dtype="float")
+
+    # Covariance Matrix array
+    co_var = np.ndarray(shape=(num_face,num_face), dtype="float")
+
+    # Compute average of face data
+    # ---------------------------------#
+    for pic in range(num_face):
+        for i in range(size):
+            avg_array[i] += float(face_data[pic][i])
+    avg_array = avg_array/num_face
+    # Subtract the mean face
+    # ---------------------------------#
+    i = 0
+    for pic in range(num_face):
+        for j in range(size):
+            mean_array[i, j] = face_data[pic][j] - avg_array[j]
+        i += 1
+    mean_array = np.transpose(mean_array)
+
+    # Compute Covariance Matrix
+    # ---------------------------------#
+    # print("mean shape: ",np.shape(mean_array))
+    trans = np.transpose(mean_array)
+    co_var = np.dot(trans, mean_array)
+    co_var = co_var/num_face
+
+    # print("covar: ", covar)
+    # print("co_var: ", co_var)
+    # print("co_var shape: ", np.shape(co_var))
+    # print("covar shape: ", np.shape(covar))
+
+    # Compute the eigen vectors of A*A^T
+    # ---------------------------------#
+    value, vector = np.linalg.eig(co_var)
+    sort_index = value.argsort()[::-1]      #Create sorting index
+    vector = vector[sort_index]             #Sort through eigenvectors
+
+    # Normalize Eigen vectors
+    # ---------------------------------#
+    vector = np.transpose(vector)
+    vector = np.dot(mean_array, vector)
+    mag = np.linalg.norm(vector)
+    vector = vector/mag
+
+    # Keep only K eigen vector
+    # ---------------------------------#
+    largest_vector = vector[:,0:8]
+    largest_vector = largest_vector.transpose()
+    print("largest vector", np.shape(largest_vector) )
+    print("mean_array", np.shape(mean_array))
+    temp = np.dot(largest_vector, mean_array)
+    return largest_vector, avg_array, temp
+
+    # Reconstruction of face
+    # ---------------------------------#
+    restrt = np.ndarray(shape=(1, size), dtype="float")
+    for j in range(7):
+        for i in range(7):
+            curr_trans = (np.atleast_2d(largest_vector[i, :]))
+            temp = np.dot(curr_trans, (np.atleast_2d(mean_array[j])).transpose())
+            # print(temp)
+            temp = np.dot(temp, np.atleast_2d(largest_vector[i, :]))
+            # print(temp)
+            restrt += temp
+
+    for i in range(size):
+        restrt[0,i]= (restrt[0,i]-min)/(max-min)*255
+
+    final = np.ndarray(shape=(112,92,3), dtype='uint8')
+    for y in range(112):
+        for x in range(92):
+            final[y, x, 0] = restrt[0, y*92+x]
+            final[y, x, 1] = restrt[0, y*92+x]
+            final[y, x, 2] = restrt[0, y*92+x]
+
+    plt.imshow(final, vmin=0, vmax=255)
+    plt.show()
+    return (largest_vector, avg_array)
+
+# Main function#
+# ------------------------------------------------------------------------#
+test_face = []
+train_face = []
+random_array = []
+avg= []
+largest=[]
+num_face = 10
+train_size = 7
+test_size = 3
+new_train_face = np.ndarray(shape=(num_face*train_size, 10304 ), dtype="float")
+
+# Read input faces
+for i in range(num_face):
+    (temp,random) = read_face(i)
+    new_train_face[i * train_size:(i + 1) * train_size] = temp
+    test_face.append(read_a_face(i,random))
+
+(larg, avg, weight) = eigen_face(new_train_face)
+total   = 0
+correct = 0
+incorrect = 0
+for i in range(num_face):
+    for j in range(test_size):
+        total += 1
+        out = face_recog(test_face[i][j],avg,larg,weight)
+
+        if int(out) == i:
+            print("Input face ID: ", i, " >>>>>> guessed ID: ", out, "Correct!")
+            correct +=1
+
+        else:
+            print("Input face ID: ", i, " >>>>>> guessed ID: ", out, "Incorrect!")
+            incorrect+=1
+
+print("total faces: ", total)
+print("Sucess rate: ", correct/float(total)*100.0, "%")
+print("Fail rate: ", incorrect/float(total)*100.0, "%")
+print(np.shape(weight))
+f = open("weight.txt", "w+")
+for i in range(np.shape(weight)[0]):
+    for j in range(np.shape(weight)[1]):
+        f.write(str(weight[i][j]))
+        if j < (np.shape(weight)[1]-1):
+            f.write(",")
+    f.write("\n")
+f.close()
+
+f = open("avg.txt", "w+")
+for i in range(10304):
+    f.write(str(avg[i]))
+    if j < 10303:
+        f.write(",")
+f.close()
+
+f = open("vector.txt", "w+")
+for i in range(np.shape(larg)[0]):
+    for j in range(np.shape(larg)[1]):
+        f.write(str(larg[i][j]))
+        if j < (np.shape(larg)[1]-1):
+            f.write(",")
+    f.write("\n")
+f.close()
