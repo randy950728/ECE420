@@ -55,20 +55,13 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
     double [][]weight = new double[weight_row][weight_col];
 
 
-    //Other variables
-//    int num_face = 10;
-//    int train_size = 7;
-//    double out;
-//    float new_train_face[][] = new float[num_face*train_size][10304];
-
-
     //Variable for UI related stuff
     private Camera camera;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
     private SurfaceView surfaceView2;
     private SurfaceHolder surfaceHolder2;
-    private ImageView input_image;
+    private ImageView test_image;
     private ImageView output_image;
     private TextView textHelper;
     private TextView result_text;
@@ -80,11 +73,12 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
     private double sucess=0.0;
     private int width = 92;
     private int height = 112;
+//    private int cam_width = 92;
+//    private int cam_height = 112;
     private int cam_width = 640;
     private int cam_height = 480;
     private Random rand= new Random();
     Bitmap image;
-    String TAG = "debug";
     private Button buttonRS;
     private Button buttonTST;
     private Lock image_lock = new ReentrantLock();;
@@ -94,6 +88,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hist_eq);
+
         // Lock down the app orientation
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
@@ -103,6 +98,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         result_text= (TextView) findViewById(R.id.result_display);
         counter_text=(TextView) findViewById(R.id.counter);
         output_image = (ImageView) findViewById(output);
+        test_image = (ImageView) findViewById(R.id.test_input);
         buttonRS = (Button) findViewById(R.id.reset);
         buttonTST = (Button) findViewById(R.id.test);
         getWindow().setFormat(PixelFormat.UNKNOWN);
@@ -145,8 +141,8 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
+    {
         // TODO Auto-generated method stub
     }
 
@@ -165,7 +161,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
                     camera.setPreviewCallback(new PreviewCallback() {
                         public void onPreviewFrame(byte[] data, Camera camera)
                         {
-                            //Simply write input camera into bitmap
+                            //Simply write camera input into bitmap
                             write_buffer(data);
                         }
                     });
@@ -181,7 +177,8 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-        if (camera != null && previewing) {
+        if (camera != null && previewing)
+        {
             camera.stopPreview();
             camera.setPreviewCallback(null);
             camera.release();
@@ -189,6 +186,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
             previewing = false;
         }
     }
+
     //----------------------------------------------------------------------------//
     private double[][] convt_to_array(int num_row, int num_col, List input_list)
     {
@@ -210,31 +208,36 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         double success_rate=0;
         int face = 0;
         int person = 0;
-//        Open up a randomly generated face for testing
+
+        //Open up a randomly generated face for testing
         face = rand.nextInt(10);
         person = rand.nextInt(10);
 //        loadDataFromAsset(face,person);
 
-        //Try to match the closest face
-        guess = face_recog();
-        draw_closest(guess);
-        total+=1;
-        temp = guess/7;
-        if(temp == person)
-        {
-            sucess += 1;
-            result_text.setText("Correct!");
-            result_text.setTextColor(Color.GREEN);
-        }
-
-        else
-        {
-            result_text.setText("Incorrect!");
-            result_text.setTextColor(Color.RED);
-        }
-
-        success_rate = (double)((int) (sucess/total*10000))/100;
-        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% "+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
+        output_image.setImageBitmap(image);
+//        //Try to match the closest face
+//        guess = face_recog();
+//        draw_closest(guess);
+//        total+=1;
+//        temp = guess/7;
+//
+//        //Check for guess result, increment counter accordingly
+//        if(temp == person)
+//        {
+//            sucess += 1;
+//            result_text.setText("Correct!");
+//            result_text.setTextColor(Color.GREEN);
+//        }
+//
+//        else
+//        {
+//            result_text.setText("Incorrect!");
+//            result_text.setTextColor(Color.RED);
+//        }
+//
+//        //Calculate success rate at update it unto the screen
+//        success_rate = (double)((int) (sucess/total*10000))/100;
+//        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% ");//+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
     }
 
     private void start()
@@ -278,6 +281,8 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
 
         //Convert the input to RGB
         int[] rgbdata = yuv2rgb(data);
+        int x_min = (cam_width-width)/2;
+        int y_min = (cam_height-height)/2;
 
         //Aquire lock before modifying image
         image_lock.lock();
@@ -286,6 +291,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
             // Create bitmap and manipulate orientation
             image = Bitmap.createBitmap(rgbdata, cam_width, cam_height, Bitmap.Config.ARGB_8888);
             image = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), matrix, true);
+            image = Bitmap.createBitmap(image, y_min, x_min,height, width);
         } finally {image_lock.unlock();}
 
         return;
@@ -341,7 +347,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
             Drawable d = Drawable.createFromStream(ims, null);
 
             // set image to ImageView
-            input_image.setImageDrawable(d);
+            test_image.setImageDrawable(d);
 
             //turn image into bitmap
             image = BitmapFactory.decodeStream(imd);
@@ -352,7 +358,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
 
 
     //-------------------------------------------------------------------------------------------//
-    private void draw_bitmag(ImageView target_view, Bitmap input_bmp, double[][] input_array)
+    private void draw_bitmap(ImageView target_view, Bitmap input_bmp, double[][] input_array)
     {
         int raw_pix;
         int curr_pix;
@@ -408,6 +414,8 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
                     input[0][i*image.getWidth()+j] = 0.2126 * R + 0.7152 * G + 0.0722 * B;
                 }
             }
+
+            test_image.setImageBitmap(image);
         } finally {image_lock.unlock();}
 
 
