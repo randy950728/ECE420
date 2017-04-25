@@ -95,8 +95,8 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         //Get the IDs of necessary items
         //---------------------------------------------//
         textHelper = (TextView) findViewById(R.id.Helper);
-        result_text= (TextView) findViewById(R.id.result_display);
-        counter_text=(TextView) findViewById(R.id.counter);
+        //result_text= (TextView) findViewById(R.id.result_display);
+        //counter_text=(TextView) findViewById(R.id.counter);
         output_image = (ImageView) findViewById(output);
         test_image = (ImageView) findViewById(R.id.test_input);
         buttonRS = (Button) findViewById(R.id.reset);
@@ -132,10 +132,10 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
             {
                 total = 0;
                 sucess = 0;
-                result_text.setText("Counter Reset!");
-                result_text.setTextColor(Color.BLACK);
-                counter_text.setText("Sucess Rate:");
-                result_text.setTextColor(Color.BLACK);
+                //result_text.setText("Counter Reset!");
+                //result_text.setTextColor(Color.BLACK);
+                //counter_text.setText("Sucess Rate:");
+               // result_text.setTextColor(Color.BLACK);
             }
         });
     }
@@ -222,18 +222,18 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         temp = guess/7;
 
         //Check for guess result, increment counter accordingly
-        if(temp == person)
-        {
-            sucess += 1;
-            result_text.setText("Correct!");
-            result_text.setTextColor(Color.GREEN);
-        }
-
-        else
-        {
-            result_text.setText("Incorrect!");
-            result_text.setTextColor(Color.RED);
-        }
+//        if(temp == person)
+//        {
+//            sucess += 1;
+//            //result_text.setText("Correct!");
+//            //result_text.setTextColor(Color.GREEN);
+//        }
+//
+//        else
+//        {
+//            result_text.setText("Incorrect!");
+//            result_text.setTextColor(Color.RED);
+//        }
 
         //Calculate success rate at update it unto the screen
         success_rate = (double)((int) (sucess/total*10000))/100;
@@ -253,9 +253,9 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         try
         {
             //Open input data
-            vector_csv = new CSVReader(new InputStreamReader(getAssets().open("vector_4.txt")));
-            avg_csv    = new CSVReader(new InputStreamReader(getAssets().open("avg_4.txt")));
-            weight_csv = new CSVReader(new InputStreamReader(getAssets().open("weight_4.txt")));
+            vector_csv = new CSVReader(new InputStreamReader(getAssets().open("vector_5.txt")));
+            avg_csv    = new CSVReader(new InputStreamReader(getAssets().open("avg_5.txt")));
+            weight_csv = new CSVReader(new InputStreamReader(getAssets().open("weight_5.txt")));
 
             //Read input data into list
             vector_list = vector_csv.readAll();
@@ -280,6 +280,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         matrix.postRotate(90);
 
         //Convert the input to RGB
+//        byte []filter=  histeq(data,cam_width,cam_height);
         int[] rgbdata = yuv2rgb(data);
         int x_min = (cam_width-width)/2;
         int y_min = (cam_height-height)/2;
@@ -560,4 +561,88 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         return largest_vector;
     }
 
+    //-----------------------------------------------------------------------//
+    // Implement this function
+    public byte[] histeq(byte[] data, int width, int height)
+    {
+        // Your data should be stored inside here
+        byte[] histeqdata = new byte[data.length];
+        int[] hist = new int[256];
+        int[] sum = new int[256];
+        int size = height*width;
+        int minimum  = 300;
+        int maximum  = 0;
+        int curr_data= 0;
+        // Perform Histogram Equalization Here
+
+        //Initialize Hist to 0
+        //-------------------------------------------------------------//
+        for(int i=0; i <hist.length; i++)
+        {
+            hist[i] = 0;
+        }
+
+
+        //Build Histogram
+        //-------------------------------------------------------------//
+        for(int i=0; i<size; i++)
+        {
+            hist[ ((int)data[i]) & (0x00FF)] +=1;
+        }
+
+
+        //Start looking for max and min of pixel intensity
+        //-------------------------------------------------------------//
+        sum[0]    = hist[0];
+        minimum   = 300;
+        maximum   = 0;
+        curr_data = 0;
+        for(int i=0; i <size; i++)
+        {
+            curr_data = ((int)data[i]) & 0x00FF;
+            if(curr_data < minimum)
+                minimum = curr_data;
+
+            if (curr_data > maximum)
+                maximum = curr_data;
+        }
+
+
+        //Integrating histogram data
+        //-------------------------------------------------------------//
+        for(int i=1; i<255; i++)
+        {
+            sum[i] =  (sum[i-1] + hist[i]);
+        }
+
+
+        //Calculate Histogram equalization array
+        //-------------------------------------------------------------//
+        for(int i = 0; i<255; i++)
+        {
+            sum[i] = (int) (((double)(sum[i] - minimum) / (double)(size - 1)) * (double)(255));
+        }
+
+
+        // Apply equalization to all pixels
+        //-------------------------------------------------------------//
+        for(int i=0; i<size; i++)
+        {
+            histeqdata[i] = (byte)sum[ ((int)data[i])&0x00FF ];
+        }
+
+
+        // Don't modify this Part, copying U,V channel data.
+        //-------------------------------------------------------------//
+        for(int i=size; i<data.length; i++)
+        {
+            histeqdata[i] = data[i];
+        }
+
+
+        return histeqdata;
+    }
+
 }
+
+
