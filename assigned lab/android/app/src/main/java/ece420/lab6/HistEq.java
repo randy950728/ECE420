@@ -4,7 +4,6 @@ package ece420.lab6;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
@@ -81,7 +80,8 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
     Bitmap image;
     private Button buttonRS;
     private Button buttonTST;
-    private Lock image_lock = new ReentrantLock();;
+    private Lock image_lock = new ReentrantLock();
+    private int flag=0;
     //-------------------------------------------------------------------------------------------//
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -130,6 +130,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
             @Override
             public void onClick(View v)
             {
+                flag=0;
                 total = 0;
                 sucess = 0;
                 //result_text.setText("Counter Reset!");
@@ -147,12 +148,16 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(SurfaceHolder holder)
+    {
         // TODO Auto-generated method stub
-        if(!previewing) {
+        if(!previewing)
+        {
             camera = Camera.open();
-            if (camera != null) {
-                try {
+            if (camera != null)
+            {
+                try
+                {
                     Camera.Parameters parameters = camera.getParameters();
                     parameters.setPreviewSize(cam_width,cam_height);
                     camera.setParameters(parameters);
@@ -167,9 +172,8 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
                     });
                     camera.startPreview();
                     previewing = true;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                } catch (IOException e)
+                {e.printStackTrace();}
             }
         }
     }
@@ -216,6 +220,7 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
 
 
         //Try to match the closest face
+        flag=1;
         guess = face_recog();
         draw_closest(guess);
         total+=1;
@@ -236,8 +241,8 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
 //        }
 
         //Calculate success rate at update it unto the screen
-        success_rate = (double)((int) (sucess/total*10000))/100;
-        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% ");//+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
+//        success_rate = (double)((int) (sucess/total*10000))/100;
+//        counter_text.setText("Success Rate: "+Double.toString(success_rate)+"% ");//+Integer.toString(guess)+" "+Integer.toString(person)+" "+Integer.toString(temp)+ " "+ Integer.toString(guess%7+1));
     }
 
     private void start()
@@ -294,6 +299,10 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
             image = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), matrix, true);
             image = Bitmap.createBitmap(image, y_min, x_min,width, height);
         } finally {image_lock.unlock();}
+        if(flag==0)
+        {
+            test_image.setImageBitmap(image);
+        }
 
         return;
     }
