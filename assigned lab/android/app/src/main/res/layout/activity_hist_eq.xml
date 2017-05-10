@@ -9,22 +9,23 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#ff000000"
     tools:context="ece420.lab6.HistEq">
 
     <TextView
         android:id="@+id/Helper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Closest Image"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title"
-        tools:layout_editor_absoluteY="299dp"
-        app:layout_constraintLeft_toLeftOf="@+id/output"
+        android:layout_alignStart="@+id/frameLayout"
+        android:layout_below="@+id/frameLayout"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="@+id/output"
+        android:text="Face Recognition"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
         app:layout_constraintHorizontal_bias="0.35"
-        android:layout_below="@+id/frameLayout"
-        android:layout_alignStart="@+id/frameLayout" />
+        app:layout_constraintLeft_toLeftOf="@+id/output"
+        app:layout_constraintRight_toRightOf="@+id/output"
+        tools:layout_editor_absoluteY="299dp" />
 
     <ImageView
         android:id="@+id/output"
@@ -156,7 +157,7 @@
         android:id="@+id/frameLayout">
 
         <TextView
-            android:id="@+id/HETitle"
+            android:id="@+id/input_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
@@ -178,7 +179,7 @@
             android:layout_above="@+id/reset"
             android:layout_alignParentEnd="true"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/HETitle"
+            android:layout_below="@+id/input_text"
             android:layout_marginEnd="8dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
@@ -195,9 +196,9 @@
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="46dp"
         android:text="  "
-        android:layout_above="@+id/output"
+        android:layout_marginStart="117dp"
+        android:layout_above="@+id/test_input"
         android:layout_toEndOf="@+id/Helper" />
 
 </RelativeLayout>

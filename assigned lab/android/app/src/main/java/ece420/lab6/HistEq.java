@@ -4,6 +4,7 @@ package ece420.lab6;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
@@ -22,6 +23,7 @@ import android.widget.TextView;
 import com.opencsv.CSVReader;
 
 import org.ejml.simple.SimpleMatrix;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +65,9 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
     private ImageView test_image;
     private ImageView output_image;
     private TextView textHelper;
+    private TextView inputtext;
+    private TextView input;
+    private TextView guess;
     private TextView result_text;
     private TextView counter_text;
 
@@ -95,8 +100,13 @@ public class HistEq extends AppCompatActivity implements SurfaceHolder.Callback
         //Get the IDs of necessary items
         //---------------------------------------------//
         textHelper = (TextView) findViewById(R.id.Helper);
-        //result_text= (TextView) findViewById(R.id.result_display);
-        //counter_text=(TextView) findViewById(R.id.counter);
+        inputtext  = (TextView) findViewById(R.id.input_text);
+        input = (TextView) findViewById(R.id.textView);
+        guess = (TextView) findViewById(R.id.textView2);
+        textHelper.setTextColor(Color.WHITE);
+        inputtext.setTextColor(Color.WHITE);
+        guess.setTextColor(Color.WHITE);
+        input.setTextColor(Color.WHITE);
         output_image = (ImageView) findViewById(output);
         test_image = (ImageView) findViewById(R.id.test_input);
         buttonRS = (Button) findViewById(R.id.reset);

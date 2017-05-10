@@ -251,6 +251,7 @@ for i in range(num_face):
 total   = 0
 correct = 0
 incorrect = 0
+confusion = [0]*(7*10)
 for i in range(num_face):
     for j in range(test_size):
         total += 1
@@ -262,11 +263,13 @@ for i in range(num_face):
 
         else:
             print("Input face ID: ", i, " >>>>>> guessed ID: ", out, "Incorrect!")
+            confusion[out]+=1
             incorrect+=1
 
 print("total faces: ", total)
 print("Sucess rate: ", correct/float(total)*100.0, "%")
 print("Fail rate: ", incorrect/float(total)*100.0, "%")
+print("the most confused face: ", confusion)
 print(np.shape(weight))
 f = open("weight.txt", "w+")
 for i in range(np.shape(weight)[0]):
